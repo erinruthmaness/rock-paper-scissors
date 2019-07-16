@@ -99,5 +99,14 @@ textarea {
     font-size: 40px;
     border: solid #5c5843  2px;
     margin: 5px;
+}
 
+p {
+    padding: 10px;
+}
+
+h6 {
+    padding: 10px;
+    font-size: 20px;
+    padding-bottom: 20px;
 }
