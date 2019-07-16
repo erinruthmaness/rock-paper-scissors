@@ -107,7 +107,7 @@ function singlePlayer() {
         if (p1paper === false && p1scissors === false) {
             p1rock = true;
             console.log("player 1 chose rock");
-            setTimeout(function () { vsComputer(); }, 2000);
+            setTimeout(function () { vsComputer(); }, 1000);
 
         }
         else {
@@ -122,7 +122,7 @@ function singlePlayer() {
         if (p1rock === false && p1scissors === false) {
             p1paper = true;
             console.log("player 1 chose paper");
-            setTimeout(function () { vsComputer(); }, 2000);
+            setTimeout(function () { vsComputer(); }, 1000);
         }
         else {
             console.log("player 1 already made a choice");
@@ -136,7 +136,7 @@ function singlePlayer() {
         if (p1rock === false && p1paper === false) {
             p1scissors = true;
             console.log("player 1 chose scissors");
-            setTimeout(function () { vsComputer(); }, 2000);
+            setTimeout(function () { vsComputer(); }, 1000);
 
         }
         else {
@@ -145,8 +145,6 @@ function singlePlayer() {
         }
 
     })
-
-
 
 
 }
