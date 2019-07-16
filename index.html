@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Rock Paper Scissors</title>
+
+    <script src="https://kit.fontawesome.com/2883514cfd.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+
+<body>
+
+    <div class="header"></div>
+    <div id="game-body">
+
+        <div class="game-board">
+            <button id="start-game">CLICK TO START</button>
+        </div>
+
+        <div class="game-board">
+            <div class="player-buttons" id="player1-buttons">
+                <!-- player 1 icons -->
+                <p>
+                    <i class="far fa-hand-rock" id="player1-rock"></i>
+                    <i class="far fa-hand-paper" id="player1-paper"></i>
+                    <i class="far fa-hand-scissors" id="player1-scissors"></i></p>
+                <p>Player One</p>
+
+            </div>
+            <div class="player-buttons" id="player2-buttons">
+                <!-- player 2 icons -->
+                <p>
+                    <i class="fas fa-hand-rock" id="player2-rock"></i>
+                    <i class="fas fa-hand-paper" id="player2-paper"></i>
+                    <i class="fas fa-hand-scissors" id="player2-scissors"></i></p>
+                <p>Player Two</p>
+
+            </div>
+        </div>
+
+        <div id="chat-window">
+            <div id="submit-chat">
+                <textarea class="form-control" id="chat-new" type="text"></textarea>
+                <button id="submit-bid" type="submit">Send</button>
+            </div>
+            <div id="chat-history">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.4/firebase-database.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCYfrjGw_OCvsfTbHrgO6yuTCLrmFRHpxY",
+            authDomain: "rock-paper-scissors-9cc6e.firebaseapp.com",
+            databaseURL: "https://rock-paper-scissors-9cc6e.firebaseio.com",
+            projectId: "rock-paper-scissors-9cc6e",
+            storageBucket: "",
+            messagingSenderId: "701310267348",
+            appId: "1:701310267348:web:2167430d09d350e6"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+    </script>
+    <script src="assets/javascript/game.js"></script>
+
+</body>
+
+</html>
