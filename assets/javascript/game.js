@@ -2,24 +2,21 @@ var database = firebase.database();
 var amOnline = database.ref(".info/connected");
 var numConnections = database.ref("/connected");
 var userRef = database.ref("/user");
-var userIDnum = 0;
+var gameStatus = database.ref("/game");
+var chatLog = database.ref("/chatlog");
 
-//every time a new username is entered, this variable increases
-userRef.on("child_added", function(newUserSnap) {
-    userIDnum++;
+//assigns two users who click play multiplayer to the game spaces
+userRef.on("child_added", function (newUserSnap) {
+
     var newUser = newUserSnap.val();
-    console.log(newUser + userIDnum);
-    if (userIDnum === 1) {
-        $("p1-title").text(newUser);
+    if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") !== "taken")) {
+        $("#p2-title").text(newUser).attr("class", "taken");
     }
 
-    if (userIDnum === 2) {
-        $("p2-title").text(newUser);
+    else if ($("#p1-title").attr("class") !== "taken") {
+        $("#p1-title").text(newUser).attr("class", "taken");
     }
 
-    else {
-        console.log(userIDnum + " is too many")
-    }
 
 })
 
@@ -144,6 +141,7 @@ function singlePlayer(nextStep) {
 
         if (p1paper === false && p1scissors === false) {
             p1rock = true;
+            gameStatus.push("p1rock");
             console.log("player 1 chose rock");
             nextStep();
         }
@@ -158,6 +156,7 @@ function singlePlayer(nextStep) {
 
         if (p1rock === false && p1scissors === false) {
             p1paper = true;
+            gameStatus.push("p1paper");
             console.log("player 1 chose paper");
             nextStep();
         }
@@ -172,6 +171,7 @@ function singlePlayer(nextStep) {
 
         if (p1rock === false && p1paper === false) {
             p1scissors = true;
+            gameStatus.push("p1scissors");
             console.log("player 1 chose scissors");
             nextStep();
         }
@@ -201,24 +201,20 @@ function vsComputer() {
         p2scissors = true;
     }
 
-    else {
-        console.log("whoops.. randomNum was " + randomNum);
-    }
-
     compareChoice();
 
 }
 
 function vsPlayer() {
-    $("#player2-buttons").removeAttr("style");
-    $("#player1-buttons").attr("style", "background-color: gray;")
+
     //player 2 selection
     $("#player2-rock").one("click", function () {
 
         if (p2paper === false && p2scissors === false) {
             p2rock = true;
+            gameStatus.push("p2rock");
             console.log("player 2 chose rock");
-            setTimeout(function () { compareChoice(); }, 1000);
+            // setTimeout(function () { compareChoice(); }, 1000);
 
         }
         else {
@@ -232,8 +228,9 @@ function vsPlayer() {
 
         if (p2rock === false && p2scissors === false) {
             p2paper = true;
+            gameStatus.push("p2paper");
             console.log("player 2 chose paper");
-            setTimeout(function () { compareChoice(); }, 1000);
+            // setTimeout(function () { compareChoice(); }, 1000);
 
         }
         else {
@@ -247,8 +244,9 @@ function vsPlayer() {
 
         if (p2rock === false && p2paper === false) {
             p2scissors = true;
+            gameStatus.push("p2scissors")
             console.log("player 2 chose scissors");
-            setTimeout(function () { compareChoice(); }, 1000);
+            // setTimeout(function () { compareChoice(); }, 1000);
 
         }
         else {
@@ -257,10 +255,7 @@ function vsPlayer() {
         }
 
     })
-
-
 }
-
 
 function compareChoice() {
     //draws
@@ -268,10 +263,6 @@ function compareChoice() {
         (p1paper === true && p2paper === true) ||
         (p1scissors === true && p2scissors === true)) {
         revealChoice()
-        console.log("player one " + p1rock + p1paper + p1scissors);
-        console.log("player two " + p2rock + p2paper + p2scissors);
-        console.log("it's a tie");
-        // resetGame();
     }
 
     //player 1 wins
@@ -280,10 +271,6 @@ function compareChoice() {
         (p1scissors === true && p2paper === true)) {
         p1wins++;
         revealChoice()
-        console.log("player one " + p1rock + p1paper + p1scissors);
-        console.log("player two " + p2rock + p2paper + p2scissors);
-        console.log("the number of times p1 has won is " + p1wins);
-        // resetGame();
     }
 
     //player 2 wins
@@ -292,19 +279,18 @@ function compareChoice() {
         (p2scissors === true && p1paper === true)) {
         p2wins++;
         revealChoice()
-        console.log("player one " + p1rock + p1paper + p1scissors);
-        console.log("player two " + p2rock + p2paper + p2scissors);
-        console.log("the number of times p2 has won is " + p2wins);
-        // resetGame();
     }
 
     else {
-        console.log("neither wins - yet?");
+        console.log("neither wins");
     }
 }
 
 function revealChoice() {
     choicesOff();
+
+    $("#player2-buttons").removeAttr("style");
+    $("#player1-buttons").removeAttr("style");
 
     if (p1rock === true) {
         $("#player1-rock").attr("style", "color: black");
@@ -337,8 +323,10 @@ function revealChoice() {
 
     $("#p1-wins").text(p1wins);
     $("#p2-wins").text(p2wins);
-    $("#start-game").text("PLAY THE COMPUTER AGAIN").on("click", function () {
+    $("#start-game").text("PLAY THE COMPUTER").on("click", function () {
+        $("#start-game").text("GAME IN PROGRESS...");
         resetGame()
+        $("#player2-buttons").attr("style", "background-color: gray;")
         $("#p2-title").text("Computer");
     })
 
@@ -361,8 +349,8 @@ function resetGame() {
     p2rock = false;
     p2paper = false;
     p2scissors = false;
-    userIDnum = 0;
-    userRef.delete();
+    userRef.remove();
+    gameStatus.remove();
     //colors go back to default
     $("#player2-buttons").removeAttr("style");
     $("#p2-title").text("Player Two");
@@ -375,50 +363,137 @@ function resetGame() {
 
 }
 
+$("#reset-game").on("click", function () {
+    p1wins = 0;
+    p2wins = 0;
+    $("#p1-wins").text(p1wins);
+    $("#p2-wins").text(p2wins);
+    resetGame();
+    $("#p1-title").text("Player One").removeAttr("class");
+    $("#p2-title").text("Player Two").removeAttr("class");
+
+});
+
 numConnections.on("value", function (snapshot) {
 
     if (snapshot.numChildren() <= 1) {
         $("#start-multi-game").attr("style", "color: gray;");
         $("#start-multi-game").off();
         $("#start-game").on("click", function () {
-            singlePlayer(callComputer);
             $("#player2-buttons").attr("style", "background-color: gray;")
             $("#p2-title").text("Computer");
             $("#start-game").text("GAME IN PROGRESS...");
-
+            singlePlayer(callComputer);
         })
     }
 
     else if (snapshot.numChildren() >= 2) {
         //once 2+ people are online:
         $("#start-multi-game").removeAttr("style");
+        //when they click the start multiplayer game button...
         $("#start-multi-game").on("click", function () {
-            console.log(userIDnum + "is the # of user IDs");
-            var userID = prompt("Please enter your name");
+            //if both spaces are assigned
+            //clears out any previous game they may have been playing
+            resetGame();
+            if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") === "taken")) {
+                console.log("two people are already playing")
+            }
 
-            if (userIDnum <= 2) {
+            else {
+                var userID = prompt("Please enter your name");
+                //pushes userID from prompt to firebase
                 userRef.push(userID);
 
-            }
+                userRef.on("value", function () {
+                    if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") === "taken")) {
+                        singlePlayer(vsPlayer);
+                        console.log("starting the game")
+                        $("#start-multi-game").text("GAME IN PROGRESS...")
+                        $("#start-multi-game").off();
 
-            else if (userIDnum > 2) {
-                alert("two people are already playing");
-                $("#start-multi-game").off();
-            }
+                        //if p1 makes a selection, the game moves on to p2's turn for both players
+                        gameStatus.on("child_added", function (p1snap) {
+                            var playerPick = p1snap.val();
+                            console.log("player 1 chose " + playerPick)
+                            $("#player2-buttons").removeAttr("style");
+                            $("#player1-buttons").attr("style", "background-color: gray;")
+                            if (playerPick === "p1rock") {
+                                p1rock = true;
+                                vsPlayer();
+                            }
+                            else if (playerPick === "p1paper") {
+                                p1paper = true;
+                                vsPlayer();
+                            }
+                            else if (playerPick === "p1scissors") {
+                                p1scissors = true;
+                                vsPlayer();
+                            }
 
-            userRef.on("value", function (usersnap) {
-                if (usersnap.numChildren() === 2) {
-                    singlePlayer(vsPlayer);
-                    console.log(usersnap.val());
-                }
-            })
+                            else if (playerPick === "p2rock") {
+                                p2rock = true;
+                                compareChoice();
+                            }
+
+                            else if (playerPick === "p2paper") {
+                                p2paper = true;
+                                compareChoice();
+                            }
+
+                            else if (playerPick === "p2scissors") {
+                                p2scissors = true;
+                                compareChoice();
+                            }
+
+                            $("#start-multi-game").text("PLAY EACH OTHER AGAIN");
+                            $("#start-multi-game").on("click", function(){
+                                p1rock = false;
+                                p1paper = false;
+                                p1scissors = false;
+                                p2rock = false;
+                                p2paper = false;
+                                p2scissors = false;
+                                gameStatus.remove();
+                                $("#player1-buttons").removeAttr("style");
+                                $("#player1-rock").removeAttr("style");
+                                $("#player1-paper").removeAttr("style");
+                                $("#player1-scissors").removeAttr("style");
+                                $("#player2-rock").removeAttr("style");
+                                $("#player2-paper").removeAttr("style");
+                                $("#player2-scissors").removeAttr("style");
+                                singlePlayer(vsPlayer);
+
+                            })
+
+                        })
+                    }
+                })
+            }
 
         })
     }
+})
 
-    else {
-        console.log("how did this happen?");
+//chat window functionality
+$("#submit-chat").on("click", function(){
+    chatLog.push($("#chat-new").val().trim());
+    $("#chat-new").val("");
+})
+
+chatLog.on("child_added", function(chatSnap){
+    var newMsg = chatSnap.val();
+    if (newMsg !== ""){
+    var newLine = $("<p>");
+    newLine.text(newMsg).attr("class", "chat-log");
+    $("#chat1").append(newLine);
     }
 })
 
+$("#clear-chat").on("click", function() {
+    chatLog.remove();
+})
+
+chatLog.on("child_removed", function(){
+    $(".chat-log").remove();
+})
 
