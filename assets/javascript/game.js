@@ -1,4 +1,37 @@
 var database = firebase.database();
+var amOnline = database.ref(".info/connected");
+var numConnections = database.ref("/connected");
+var userRef = database.ref("/user");
+var userIDnum = 0;
+
+//every time a new username is entered, this variable increases
+userRef.on("child_added", function(newUserSnap) {
+    userIDnum++;
+    var newUser = newUserSnap.val();
+    console.log(newUser + userIDnum);
+    if (userIDnum === 1) {
+        $("p1-title").text(newUser);
+    }
+
+    if (userIDnum === 2) {
+        $("p2-title").text(newUser);
+    }
+
+    else {
+        console.log(userIDnum + " is too many")
+    }
+
+})
+
+//adds a true to a firebase folder each time a connection fires
+amOnline.on("value", function (snap) {
+    if (snap.val()) {
+        var newConn = numConnections.push(true);
+    }
+    //and removes it when it disconnects
+    newConn.onDisconnect().remove();
+
+})
 
 var p1rock = false;
 var p1paper = false;
@@ -100,15 +133,19 @@ function playerChoose() {
 
 }
 
-function singlePlayer() {
+function callComputer() {
+    setTimeout(function () { vsComputer(); }, 1000);
+}
+
+function singlePlayer(nextStep) {
+    $("#player2-buttons").attr("style", "background-color: gray;")
     //player 1 selection
     $("#player1-rock").one("click", function () {
 
         if (p1paper === false && p1scissors === false) {
             p1rock = true;
             console.log("player 1 chose rock");
-            setTimeout(function () { vsComputer(); }, 1000);
-
+            nextStep();
         }
         else {
             console.log("player 1 already made a choice");
@@ -122,7 +159,7 @@ function singlePlayer() {
         if (p1rock === false && p1scissors === false) {
             p1paper = true;
             console.log("player 1 chose paper");
-            setTimeout(function () { vsComputer(); }, 1000);
+            nextStep();
         }
         else {
             console.log("player 1 already made a choice");
@@ -136,8 +173,7 @@ function singlePlayer() {
         if (p1rock === false && p1paper === false) {
             p1scissors = true;
             console.log("player 1 chose scissors");
-            setTimeout(function () { vsComputer(); }, 1000);
-
+            nextStep();
         }
         else {
             console.log("player 1 already made a choice");
@@ -172,6 +208,59 @@ function vsComputer() {
     compareChoice();
 
 }
+
+function vsPlayer() {
+    $("#player2-buttons").removeAttr("style");
+    $("#player1-buttons").attr("style", "background-color: gray;")
+    //player 2 selection
+    $("#player2-rock").one("click", function () {
+
+        if (p2paper === false && p2scissors === false) {
+            p2rock = true;
+            console.log("player 2 chose rock");
+            setTimeout(function () { compareChoice(); }, 1000);
+
+        }
+        else {
+            console.log("player 2 already made a choice");
+            return;
+        }
+
+    })
+
+    $("#player2-paper").one("click", function () {
+
+        if (p2rock === false && p2scissors === false) {
+            p2paper = true;
+            console.log("player 2 chose paper");
+            setTimeout(function () { compareChoice(); }, 1000);
+
+        }
+        else {
+            console.log("player 2 already made a choice");
+            return;
+        }
+
+    })
+
+    $("#player2-scissors").one("click", function () {
+
+        if (p2rock === false && p2paper === false) {
+            p2scissors = true;
+            console.log("player 2 chose scissors");
+            setTimeout(function () { compareChoice(); }, 1000);
+
+        }
+        else {
+            console.log("player 2 already made a choice");
+            return;
+        }
+
+    })
+
+
+}
+
 
 function compareChoice() {
     //draws
@@ -250,7 +339,6 @@ function revealChoice() {
     $("#p2-wins").text(p2wins);
     $("#start-game").text("PLAY THE COMPUTER AGAIN").on("click", function () {
         resetGame()
-        $("#player2-buttons").attr("style", "background-color: gray;")
         $("#p2-title").text("Computer");
     })
 
@@ -273,6 +361,8 @@ function resetGame() {
     p2rock = false;
     p2paper = false;
     p2scissors = false;
+    userIDnum = 0;
+    userRef.delete();
     //colors go back to default
     $("#player2-buttons").removeAttr("style");
     $("#p2-title").text("Player Two");
@@ -285,18 +375,50 @@ function resetGame() {
 
 }
 
-//if there is one or less person online:
-$("#start-game").on("click", function () {
-    singlePlayer();
-    $("#player2-buttons").attr("style", "background-color: gray;")
-    $("#p2-title").text("Computer");
-    $("#start-game").text("GAME IN PROGRESS...");
+numConnections.on("value", function (snapshot) {
 
+    if (snapshot.numChildren() <= 1) {
+        $("#start-multi-game").attr("style", "color: gray;");
+        $("#start-multi-game").off();
+        $("#start-game").on("click", function () {
+            singlePlayer(callComputer);
+            $("#player2-buttons").attr("style", "background-color: gray;")
+            $("#p2-title").text("Computer");
+            $("#start-game").text("GAME IN PROGRESS...");
+
+        })
+    }
+
+    else if (snapshot.numChildren() >= 2) {
+        //once 2+ people are online:
+        $("#start-multi-game").removeAttr("style");
+        $("#start-multi-game").on("click", function () {
+            console.log(userIDnum + "is the # of user IDs");
+            var userID = prompt("Please enter your name");
+
+            if (userIDnum <= 2) {
+                userRef.push(userID);
+
+            }
+
+            else if (userIDnum > 2) {
+                alert("two people are already playing");
+                $("#start-multi-game").off();
+            }
+
+            userRef.on("value", function (usersnap) {
+                if (usersnap.numChildren() === 2) {
+                    singlePlayer(vsPlayer);
+                    console.log(usersnap.val());
+                }
+            })
+
+        })
+    }
+
+    else {
+        console.log("how did this happen?");
+    }
 })
 
-//once 2+ people are online:
-// $("#start-game").on("click", function () {
-//     playerChoose();
-//     $("#start-game").text("GAME IN PROGRESS...");
 
-// })
