@@ -79,6 +79,8 @@ textarea {
     border: solid #5c5843  2px;
     margin: 10px;
     float: left;
+    overflow: auto;
+    padding: 2px;
 
 }
 
