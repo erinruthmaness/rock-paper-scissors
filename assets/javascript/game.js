@@ -396,6 +396,8 @@ $(document).ready(function () {
         resetGame();
         $("#p1-title").text("Player One").removeAttr("class");
         $("#p2-title").text("Player Two").removeAttr("class");
+        $(".chat-log").remove();
+
 
     });
 
