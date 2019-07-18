@@ -4,6 +4,7 @@ var numConnections = database.ref("/connected");
 var userRef = database.ref("/user");
 var gameStatus = database.ref("/game");
 var chatLog = database.ref("/chatlog");
+var newGame = database.ref("/newgame");
 
 //assigns two users who click play multiplayer to the game spaces
 userRef.on("child_added", function (newUserSnap) {
@@ -65,6 +66,7 @@ function playerChoose() {
             p1paper = true;
             console.log("player 1 chose paper");
             compareChoice();
+
         }
         else {
             console.log("player 1 already made a choice");
@@ -80,6 +82,7 @@ function playerChoose() {
             console.log("player 1 chose scissors");
             compareChoice();
         }
+            
         else {
             console.log("player 1 already made a choice");
             return;
@@ -94,6 +97,7 @@ function playerChoose() {
             p2rock = true;
             console.log("player 2 chose rock");
             compareChoice();
+
         }
         else {
             console.log("player 2 already made a choice");
@@ -108,6 +112,7 @@ function playerChoose() {
             p2paper = true;
             console.log("player 2 chose paper");
             compareChoice();
+
         }
         else {
             console.log("player 2 already made a choice");
@@ -122,6 +127,7 @@ function playerChoose() {
             p2scissors = true;
             console.log("player 2 chose scissors");
             compareChoice();
+
         }
         else {
             console.log("player 2 already made a choice");
@@ -204,6 +210,7 @@ function vsComputer() {
     }
 
     compareChoice();
+
 
 }
 
@@ -360,6 +367,24 @@ function resetGame() {
 
 }
 
+function multiReplay() {
+    p1rock = false;
+    p1paper = false;
+    p1scissors = false;
+    p2rock = false;
+    p2paper = false;
+    p2scissors = false;
+    gameStatus.remove();
+    $("#player1-buttons").removeAttr("style");
+    $("#player1-rock").removeAttr("style");
+    $("#player1-paper").removeAttr("style");
+    $("#player1-scissors").removeAttr("style");
+    $("#player2-rock").removeAttr("style");
+    $("#player2-paper").removeAttr("style");
+    $("#player2-scissors").removeAttr("style");
+    singlePlayer(vsPlayer);
+}
+
 //wait for the fontawesome icons to load before activating any buttons
 $(document).ready(function () {
 
@@ -390,13 +415,15 @@ $(document).ready(function () {
         else if (snapshot.numChildren() >= 2) {
             //once 2+ people are online:
             $("#start-multi-game").removeAttr("style");
+            $("#start-multi-game").removeAttr("title");
             //when they click the start multiplayer game button...
             $("#start-multi-game").on("click", function () {
                 //if both spaces are assigned
                 //clears out any previous game they may have been playing
                 resetGame();
                 if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") === "taken")) {
-                    console.log("two people are already playing")
+                    $("#start-multi-game").attr("title", "Two players are already in an active game.")
+                    $("#start-multi-game").off();
                 }
 
                 else {
@@ -405,7 +432,12 @@ $(document).ready(function () {
                     userRef.push(userID);
 
                     userRef.on("value", function () {
-                        if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") === "taken")) {
+                        //if only the first player is assigned, wait
+                        if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") !== "taken")) {
+                            $("start-mult-game").text("SECOND PLAYER CLICK TO BEGIN");
+                        }
+                        //if both players are assigned, begin
+                        else if (($("#p1-title").attr("class") === "taken") && ($("#p2-title").attr("class") === "taken")) {
                             singlePlayer(vsPlayer);
                             console.log("starting the game")
                             $("#start-multi-game").text("GAME IN PROGRESS...")
@@ -444,35 +476,25 @@ $(document).ready(function () {
             else if (playerPick === "p2rock") {
                 p2rock = true;
                 compareChoice();
+
             }
 
             else if (playerPick === "p2paper") {
                 p2paper = true;
                 compareChoice();
+
             }
 
             else if (playerPick === "p2scissors") {
                 p2scissors = true;
                 compareChoice();
+
             }
 
             $("#start-multi-game").text("PLAY EACH OTHER AGAIN");
             $("#start-multi-game").on("click", function () {
-                p1rock = false;
-                p1paper = false;
-                p1scissors = false;
-                p2rock = false;
-                p2paper = false;
-                p2scissors = false;
-                gameStatus.remove();
-                $("#player1-buttons").removeAttr("style");
-                $("#player1-rock").removeAttr("style");
-                $("#player1-paper").removeAttr("style");
-                $("#player1-scissors").removeAttr("style");
-                $("#player2-rock").removeAttr("style");
-                $("#player2-paper").removeAttr("style");
-                $("#player2-scissors").removeAttr("style");
-                singlePlayer(vsPlayer);
+                newGame.set({replay: true})
+                multiReplay();
 
             })
 
@@ -500,6 +522,11 @@ $(document).ready(function () {
 
     chatLog.on("child_removed", function () {
         $(".chat-log").remove();
+    })
+
+    newGame.on("child_added", function(){
+        multiReplay();
+        newGame.remove();
     })
 
 })
