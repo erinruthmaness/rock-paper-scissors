@@ -512,7 +512,7 @@ $(document).ready(function () {
         if (newMsg !== "") {
             var newLine = $("<p>");
             newLine.text(newMsg).attr("class", "chat-log");
-            $("#chat1").append(newLine);
+            $("#chat1").prepend(newLine);
         }
     })
 
